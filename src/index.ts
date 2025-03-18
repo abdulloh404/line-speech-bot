@@ -27,13 +27,19 @@ const speechClient = new speech.SpeechClient();
 app.use(express.json());
 
 app.post("/webhook", async (req, res) => {
+  console.log(
+    "📥 Received Webhook Request:",
+    JSON.stringify(req.body, null, 2)
+  ); // ✅ Log ข้อมูล Request
+
   const events = req.body.events;
   for (const event of events) {
     if (event.type === "message" && event.message.type === "audio") {
       try {
+        console.log(`🎤 Received Audio Message: ${event.message.id}`);
         await handleAudioMessage(event);
       } catch (error) {
-        console.error("Error handling audio message:", error);
+        console.error("❌ Error handling audio message:", error);
       }
     }
   }
