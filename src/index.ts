@@ -39,7 +39,7 @@ app.post("/webhook", async (req, res) => {
         console.log(`🎤 Received Audio Message: ${event.message.id}`);
         await handleAudioMessage(event);
       } catch (error) {
-        console.error("❌ Error handling audio message:", error);
+        console.error("Error handling audio message:", error);
       }
     }
   }
