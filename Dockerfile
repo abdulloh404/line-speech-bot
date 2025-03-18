@@ -4,5 +4,5 @@ WORKDIR /app
 COPY . .
 RUN npm install
 RUN npm run build
-EXPOSE 3000
+EXPOSE 8806
 CMD ["node", "dist/index.js"]

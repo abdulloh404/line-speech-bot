@@ -13,7 +13,7 @@ import * as speech from "@google-cloud/speech";
 import ffmpeg from "fluent-ffmpeg";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8806;
 
 const config: ClientConfig & MiddlewareConfig = {
   channelAccessToken: process.env.LINE_ACCESS_TOKEN!,
