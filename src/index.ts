@@ -30,7 +30,7 @@ app.post("/webhook", async (req, res) => {
   console.log(
     "📥 Received Webhook Request:",
     JSON.stringify(req.body, null, 2)
-  ); //Log ข้อมูล Request
+  );
 
   const events = req.body.events;
   for (const event of events) {
