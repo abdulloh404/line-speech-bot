@@ -1,15 +1,21 @@
 import "dotenv/config";
 import express from "express";
-import { Client, middleware, MiddlewareConfig } from "@line/bot-sdk";
+import {
+  Client,
+  middleware,
+  MiddlewareConfig,
+  ClientConfig,
+} from "@line/bot-sdk";
 import axios from "axios";
 import fs from "fs";
 import path from "path";
 import * as speech from "@google-cloud/speech";
+import ffmpeg from "fluent-ffmpeg";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const config: MiddlewareConfig = {
+const config: ClientConfig & MiddlewareConfig = {
   channelAccessToken: process.env.LINE_ACCESS_TOKEN!,
   channelSecret: process.env.LINE_CHANNEL_SECRET!,
 };
@@ -23,7 +29,11 @@ app.post("/webhook", async (req, res) => {
   const events = req.body.events;
   for (const event of events) {
     if (event.type === "message" && event.message.type === "audio") {
-      await handleAudioMessage(event);
+      try {
+        await handleAudioMessage(event);
+      } catch (error) {
+        console.error("Error handling audio message:", error);
+      }
     }
   }
   res.sendStatus(200);
@@ -32,15 +42,22 @@ app.post("/webhook", async (req, res) => {
 async function handleAudioMessage(event: any) {
   const messageId = event.message.id;
   const audioBuffer = await getAudioFromLINE(messageId);
-  const audioPath = path.join("/tmp", "audio.ogg");
+  const audioPath = path.join("/tmp", `${messageId}.ogg`);
+  const wavPath = path.join("/tmp", `${messageId}.wav`);
   fs.writeFileSync(audioPath, audioBuffer);
 
-  const transcript = await transcribeAudio(audioPath);
+  await convertOggToWav(audioPath, wavPath);
+
+  const transcript = await transcribeAudio(wavPath);
 
   await client.replyMessage(event.replyToken, {
     type: "text",
     text: transcript || "ขออภัย ไม่สามารถแปลงข้อความได้",
   });
+
+  // ลบไฟล์ชั่วคราว
+  fs.unlinkSync(audioPath);
+  fs.unlinkSync(wavPath);
 }
 
 async function getAudioFromLINE(messageId: string): Promise<Buffer> {
@@ -52,12 +69,27 @@ async function getAudioFromLINE(messageId: string): Promise<Buffer> {
   return Buffer.from(response.data);
 }
 
+async function convertOggToWav(
+  inputPath: string,
+  outputPath: string
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    ffmpeg(inputPath)
+      .toFormat("wav")
+      .on("end", () => resolve())
+      .on("error", (err) => reject(err))
+      .save(outputPath);
+  });
+}
+
 async function transcribeAudio(filePath: string): Promise<string> {
-  const audio = { content: fs.readFileSync(filePath).toString("base64") };
+  const audio = {
+    content: fs.readFileSync(filePath).toString("base64"),
+  };
   const request = {
     audio: audio,
     config: {
-      encoding: "OGG_OPUS",
+      encoding: speech.RecognitionConfig.AudioEncoding.LINEAR16,
       sampleRateHertz: 16000,
       languageCode: "th-TH",
     },
