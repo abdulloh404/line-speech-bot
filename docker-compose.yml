@@ -10,12 +10,13 @@ services:
       VIRTUAL_HOST: line-speech-bot.cocoa-d.net
       LETSENCRYPT_HOST: line-speech-bot.cocoa-d.net
       LETSENCRYPT_EMAIL: support@cocoa-d.net
+      GOOGLE_APPLICATION_CREDENTIALS: /app/config/service-account-speech-text-api.json
     ports:
       - "8806:8806"
     env_file:
       - .env
     volumes:
-      - ./service-account-speech-text-api.json:/app/service-account.json
+      - ./config/service-account-speech-text-api.json:/app/config/service-account-speech-text-api.json
 
 networks:
   default:
