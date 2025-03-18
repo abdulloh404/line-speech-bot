@@ -1,0 +1,12 @@
+version: "3.8"
+services:
+  app:
+    build: .
+    container_name: line-speech-bot
+    restart: always
+    ports:
+      - "8806:8806"
+    env_file:
+      - .env
+    volumes:
+      - ./service-account-speech-text-api.json:/app/service-account.json
