@@ -1,20 +1,12 @@
-version: "3"
-
+version: "3.8"
 services:
-  line-speech-bot:
+  app:
     build: .
     container_name: line-speech-bot
-    image: line-speech-bot:latest
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      TZ: Asia/Bangkok
-      VIRTUAL_HOST: linebot.cocoa-d.net 
-      LETSENCRYPT_HOST: linebot.cocoa-d.net
-      LETSENCRYPT_EMAIL: support@cocoa-d.net
-    networks:
-      - nginx-proxy-cocoad
-
-networks:
-  nginx-proxy-cocoad:
-    external: true
+    restart: always
+    ports:
+      - "8806:8806"
+    env_file:
+      - .env
+    volumes:
+      - ./service-account-speech-text-api.json:/app/service-account.json
