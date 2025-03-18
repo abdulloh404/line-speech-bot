@@ -9,11 +9,9 @@ services:
     env_file: .env
     environment:
       TZ: Asia/Bangkok
-      VIRTUAL_HOST: linebot.cocoa-d.net
+      VIRTUAL_HOST: linebot.cocoa-d.net 
       LETSENCRYPT_HOST: linebot.cocoa-d.net
       LETSENCRYPT_EMAIL: support@cocoa-d.net
-    ports:
-      - "8806:8806"
     networks:
       - nginx-proxy-cocoad
 
