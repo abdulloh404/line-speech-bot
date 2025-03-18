@@ -5,7 +5,7 @@ services:
     build: .
     container_name: line-speech-bot
     ports:
-      - "8806:8806"
+      - "9906:9906"
     restart: always
 
   nginx:
@@ -14,7 +14,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "8806:8806"
+      - "9906:9906"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - certbot-etc:/etc/letsencrypt
