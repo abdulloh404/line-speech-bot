@@ -23,7 +23,8 @@ const config: ClientConfig & MiddlewareConfig = {
 const client = new Client(config);
 const speechClient = new speech.SpeechClient();
 
-app.use(middleware(config));
+// app.use(middleware(config));
+app.use(express.json());
 
 app.post("/webhook", async (req, res) => {
   const events = req.body.events;
