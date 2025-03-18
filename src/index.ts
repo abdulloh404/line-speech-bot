@@ -89,7 +89,7 @@ async function transcribeAudio(filePath: string): Promise<string> {
   const request = {
     audio: audio,
     config: {
-      encoding: speech.RecognitionConfig.AudioEncoding.LINEAR16,
+      encoding: "LINEAR16" as any,
       sampleRateHertz: 16000,
       languageCode: "th-TH",
     },
