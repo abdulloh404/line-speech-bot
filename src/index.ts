@@ -97,31 +97,42 @@ export function detectKeywords(transcript: string): number[] {
     }
   }
 
-  // สำหรับ building commands index 3-6
-  for (let i = 3; i <= 6; i++) {
-    if (keywordData[i].some((kw) => text.includes(kw.toLowerCase()))) {
+  const lowerText = text.toLowerCase();
+
+  // ตรวจจับคำสั่งที่เกี่ยวกับตึก 1-4 (index 3-6)
+  const buildingIndices = [3, 4, 5, 6];
+  for (const i of buildingIndices) {
+    const buildingNumber = i - 2; // ตึก 1-4
+    if (
+      (lowerText.includes(`ตึก ${buildingNumber}`) ||
+        keywordData[i].some((kw) => lowerText.includes(kw.toLowerCase()))) &&
+      (lowerText.includes("ชม") || lowerText.includes("ดู"))
+    ) {
       detectedIndices.push(i);
+      break; // หยุดทันทีถ้าพบเพื่อป้องกันการทับซ้อน
     }
   }
 
-  const lowerText = text.toLowerCase();
-
   // ตรวจจับ head office (index 7)
-  if (
-    (lowerText.includes("head office") || lowerText.includes("เฮดออฟฟิศ")) &&
-    lowerText.includes("ตึก") &&
-    (lowerText.includes("ชม") || lowerText.includes("ดู"))
-  ) {
-    detectedIndices.push(7);
+  if (!detectedIndices.includes(7)) {
+    if (
+      (lowerText.includes("head office") || lowerText.includes("เฮดออฟฟิศ")) &&
+      lowerText.includes("ตึก") &&
+      (lowerText.includes("ชม") || lowerText.includes("ดู"))
+    ) {
+      detectedIndices.push(7);
+    }
   }
 
   // ตรวจจับ multi purpose (index 8)
-  if (
-    (lowerText.includes("อาคารอเนกประสงค์") ||
-      lowerText.includes("ตึกอเนกประสงค์")) &&
-    (lowerText.includes("ชม") || lowerText.includes("ดู"))
-  ) {
-    detectedIndices.push(8);
+  if (!detectedIndices.includes(8)) {
+    if (
+      (lowerText.includes("อาคารอเนกประสงค์") ||
+        lowerText.includes("ตึกอเนกประสงค์")) &&
+      (lowerText.includes("ชม") || lowerText.includes("ดู"))
+    ) {
+      detectedIndices.push(8);
+    }
   }
 
   return detectedIndices;
