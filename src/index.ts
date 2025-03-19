@@ -67,12 +67,6 @@ const keywordData: string[][] = JSON.parse(
   fs.readFileSync(keywordFilePath, "utf-8")
 );
 
-/**
- * ตรวจจับ keyword จาก transcript โดยจะ return index ของ keyword ที่ตรวจพบ
- * index 0: motor run, index 1: motor stop, index 2: motor percent,
- * index 3: building1, index 4: building2, index 5: building3,
- * index 6: building4, index 7: headOffice, index 8: multi-purpose
- */
 export function detectKeywords(transcript: string): number[] {
   const detectedIndices: number[] = [];
   const lowerText = transcript.toLowerCase();
@@ -80,16 +74,20 @@ export function detectKeywords(transcript: string): number[] {
   // ตรวจจับ motor run (index 0) ก่อน motor stop (index 1)
   if (keywordData[0].some((kw) => lowerText.includes(kw.toLowerCase()))) {
     detectedIndices.push(0);
+    paramNoArray[0] = "1"; // เก็บค่าไว้ใน paramNoArray
   } else if (
     keywordData[1].some((kw) => lowerText.includes(kw.toLowerCase()))
   ) {
     detectedIndices.push(1);
+    paramNoArray[1] = "1"; // เก็บค่าไว้ใน paramNoArray
   }
 
-  // ตรวจจับ motor percent (index 2)
+  // ตรวจจับ motor percent (index 2) และเก็บเปอร์เซ็นต์
   const percentRegex = /(\d{1,3})\s*(?:%|เปอร์เซ็น)/i;
-  if (percentRegex.test(transcript)) {
+  const percentMatch = transcript.match(percentRegex);
+  if (percentMatch && percentMatch[1]) {
     detectedIndices.push(2);
+    paramNoArray[2] = percentMatch[1]; // เก็บเปอร์เซ็นต์ใน paramNoArray
   }
 
   // ตรวจจับตึก 1-4 (index 3-6)
@@ -101,6 +99,7 @@ export function detectKeywords(transcript: string): number[] {
       (lowerText.includes("ชม") || lowerText.includes("ดู"))
     ) {
       detectedIndices.push(i);
+      paramNoArray[i] = "1"; // เก็บค่าใน paramNoArray
       break;
     }
   }
@@ -112,6 +111,7 @@ export function detectKeywords(transcript: string): number[] {
     (lowerText.includes("ชม") || lowerText.includes("ดู"))
   ) {
     detectedIndices.push(7);
+    paramNoArray[7] = "1"; // เก็บค่าใน paramNoArray
   }
 
   // ตรวจจับ multi purpose (index 8)
@@ -121,6 +121,7 @@ export function detectKeywords(transcript: string): number[] {
     (lowerText.includes("ชม") || lowerText.includes("ดู"))
   ) {
     detectedIndices.push(8);
+    paramNoArray[8] = "1"; // เก็บค่าใน paramNoArray
   }
 
   return detectedIndices;
@@ -155,6 +156,7 @@ export async function handleAudioMessage(event: any) {
           responseText += "- ระบบกำลังปิดมอเตอร์ให้ครับ\n";
           break;
         case 2:
+          // เก็บเปอร์เซ็นต์จากข้อความ
           const percentMatch = transcript.match(/\d{1,3}/);
           const percent = percentMatch ? percentMatch[0] : "xx";
           responseText += `- ระบบกำลังปรับความเร็ว มอเตอร์ เป็น ${percent}%\n`;
