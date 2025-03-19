@@ -74,6 +74,64 @@ app.get("/command", (req, res) => {
   res.status(200).send(returnValue);
 });
 
+function detectCommands(transcript: string) {
+  const commands: any[] = [];
+
+  // 1. ตรวจจับคำสั่ง "มอเตอร์ run"
+  const motorRunKeywords = [
+    "เปิดมอเตอร์",
+    "Motor run",
+    "มอเตอร์รัน",
+    "มอเตอร์ run",
+    "มอเตอร์ Open",
+    "มอเตอร์โอเพ่น",
+    "Motor open",
+  ];
+  if (motorRunKeywords.some((kw) => transcript.includes(kw))) {
+    commands.push({ type: "motor", action: "run" });
+  }
+
+  // 2. ตรวจจับคำสั่ง "มอเตอร์ stop"
+  const motorStopKeywords = [
+    "ดับมอเตอร์",
+    "Motor stop",
+    "มอเตอร์สต๊อป",
+    "Motor close",
+    "มอเตอร์ Stop",
+  ];
+  if (motorStopKeywords.some((kw) => transcript.includes(kw))) {
+    commands.push({ type: "motor", action: "stop" });
+  }
+
+  // 3. ตรวจจับคำสั่ง "มอเตอร์ xx เปอร์เซ็น" หรือ "มอเตอร์ xx %"
+  const motorPercentRegex = /(?:มอเตอร์|Motor)\s*(\d{1,3})\s*(?:เปอร์เซ็น|%)/i;
+  const percentMatch = transcript.match(motorPercentRegex);
+  if (percentMatch && percentMatch[1]) {
+    const percent = Number(percentMatch[1]);
+    if (percent >= 1 && percent <= 100) {
+      commands.push({ type: "motor", action: "percent", value: percent });
+    }
+  }
+
+  // 4-9. ตรวจจับคำสั่งนำทางไปยังอาคารต่าง ๆ
+  const buildingCommands: { [key: string]: string[] } = {
+    building1: ["ไปชมตึก1", "พาไปดูตึก1"],
+    building2: ["ไปชมตึก2", "พาไปดูตึก2"],
+    building3: ["ไปชมตึก3", "พาไปดูตึก3"],
+    building4: ["ไปชมตึก4", "พาไปดูตึก4"],
+    headOffice: ["ไปชมตึกHeadOffice", "พาไปดูตึกHeadOffice"],
+    multiPurpose: ["ไปชมตึก multi-purpose", "พาไปดูตึกmulti-purpose"],
+  };
+
+  Object.entries(buildingCommands).forEach(([destination, keywords]) => {
+    if (keywords.some((kw) => transcript.includes(kw))) {
+      commands.push({ type: "navigate", destination });
+    }
+  });
+
+  return commands;
+}
+
 async function handleAudioMessage(event: any) {
   const messageId = event.message.id;
   const audioBuffer = await getAudioFromLINE(messageId);
@@ -84,29 +142,35 @@ async function handleAudioMessage(event: any) {
   await convertOggToWav(audioPath, wavPath);
 
   const transcript = await transcribeAudio(wavPath);
-  console.log(transcript);
+  console.log("Transcription:", transcript);
 
-  await client
-    .replyMessage(event.replyToken, {
-      type: "text",
-      text: transcript || "ขออภัย ไม่สามารถแปลงข้อความได้",
-    })
-    .then(() => {
-      console.log("📤 Sent Text Response:", transcript);
-      if (transcript.indexOf("เปิดไฟเมน 1") > -1) {
-        paramNoArray[0] = paramNoArray[0] == "1" ? "0" : "1";
-      } else if (transcript.indexOf("ดับไฟเมน 1") > -1) {
-        paramNoArray[1] = paramNoArray[1] == "1" ? "0" : "1";
-      } else if (transcript.indexOf("เปิดไฟเมน 2") > -1) {
-        paramNoArray[2] = paramNoArray[2] == "1" ? "0" : "1";
-      } else if (transcript.indexOf("ดับไฟเมน 2") > -1) {
-        paramNoArray[3] = paramNoArray[3] == "1" ? "0" : "1";
-      } else if (transcript.indexOf("เปิดไฟห้องคอนโทรล") > -1) {
-        paramNoArray[4] = paramNoArray[4] == "1" ? "0" : "1";
-      } else if (transcript.indexOf("ดับไฟห้องคอนโทรล") > -1) {
-        paramNoArray[5] = paramNoArray[5] == "1" ? "0" : "1";
+  // ตรวจจับคำสั่งที่มีอยู่ในข้อความ
+  const detectedCommands = detectCommands(transcript);
+  console.log("Detected Commands:", detectedCommands);
+
+  // ส่งข้อความตอบกลับ LINE (สามารถเพิ่มเติมการจัดการตาม detectedCommands ได้)
+  await client.replyMessage(event.replyToken, {
+    type: "text",
+    text: transcript || "ขออภัย ไม่สามารถแปลงข้อความได้",
+  });
+
+  // ตัวอย่างการสลับค่าใน paramNoArray ตามคำสั่ง (ปรับตามความต้องการ)
+  detectedCommands.forEach((cmd) => {
+    if (cmd.type === "motor") {
+      if (cmd.action === "run") {
+        paramNoArray[0] = paramNoArray[0] === "1" ? "0" : "1";
+      } else if (cmd.action === "stop") {
+        paramNoArray[1] = paramNoArray[1] === "1" ? "0" : "1";
+      } else if (cmd.action === "percent") {
+        // สามารถบันทึกค่าเปอร์เซ็นในตำแหน่งที่ต้องการได้ เช่น paramNoArray[2] = cmd.value;
+        paramNoArray[2] = cmd.value.toString();
       }
-    });
+    } else if (cmd.type === "navigate") {
+      // จัดการกับคำสั่งนำทาง เช่น:
+      console.log(`นำทางไปยัง ${cmd.destination}`);
+      // สามารถปรับเปลี่ยนการทำงานหรือส่งค่ากลับให้ระบบอื่นได้
+    }
+  });
 
   // ลบไฟล์ชั่วคราว
   fs.unlinkSync(audioPath);
