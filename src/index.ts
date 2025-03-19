@@ -86,6 +86,7 @@ function detectCommands(transcript: string) {
     "มอเตอร์ Open",
     "มอเตอร์โอเพ่น",
     "Motor open",
+    "Motor Run",
   ];
   if (motorRunKeywords.some((kw) => transcript.includes(kw))) {
     commands.push({ type: "motor", action: "run" });
