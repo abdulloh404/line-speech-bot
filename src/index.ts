@@ -125,8 +125,8 @@ function detectCommands(transcript: string) {
     building2: ["ไปชมตึก 2", "พาไปดูตึก 2"],
     building3: ["ไปชมตึก 3", "พาไปดูตึก 3"],
     building4: ["ไปชมตึก 4", "พาไปดูตึก 4"],
-    headOffice: ["ไปชมตึก HeadOffice", "พาไปดูตึก HeadOffice"],
-    multiPurpose: ["ไปชมตึก multi-purpose", "พาไปดูตึก multi-purpose"],
+    headOffice: ["ไปชมตึก Head office", "พาไปดูตึก Head office"],
+    multiPurpose: ["ไปชมตึก multi purpose", "พาไปดูตึก multi purpose"],
   };
 
   Object.entries(buildingCommands).forEach(([destination, keywords]) => {
