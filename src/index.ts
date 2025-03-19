@@ -33,12 +33,12 @@ app.post("/webhook", async (req, res) => {
 
   const events = req.body.events;
   for (const event of events) {
-    if (event.message.type === "audio") {
+    if (event.type === "message" && event.message.type === "audio") {
       try {
-        console.log(`🎤 Received Audio Message: ${event.message.id}`);
+        console.log(`Received Audio Message: ${event.message.id}`);
         await handleAudioMessage(event);
       } catch (error) {
-        console.error("❌ Error handling audio message:", error);
+        console.error("Error handling audio message:", error);
       }
     }
   }
@@ -64,14 +64,16 @@ async function handleAudioMessage(event: any) {
   const transcript = await transcribeAudio(wavPath);
   console.log("Transcript:", transcript);
 
-  // ตรวจจับคำสั่งและเก็บผลลัพธ์ใน array
-  const commandParams = detectCommands(transcript);
-  console.log("Detected command parameters:", commandParams);
+  // ตรวจจับคำสั่งตาม logic เก่า เก็บเป็น "0" / "1" หรือ ตัวเลข
+  const paramNoArray = detectCommands(transcript);
+  console.log("Detected paramNoArray:", paramNoArray);
 
-  // ส่งข้อความตอบกลับไปที่ LINE โดยแสดงค่าที่ตรวจจับได้
+  // ส่งค่า array กลับเป็น JSON string
+  const resultJson = JSON.stringify(paramNoArray);
+
   await client.replyMessage(event.replyToken, {
     type: "text",
-    text: `Detected commands: ${JSON.stringify(commandParams)}`,
+    text: resultJson,
   });
 
   // ลบไฟล์ชั่วคราว
@@ -125,6 +127,10 @@ async function transcribeAudio(filePath: string): Promise<string> {
   );
 }
 
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
+
 /**
  * ตรวจจับคำสั่งจาก transcript และส่งกลับเป็น array
  * index 0: คำสั่ง Motor run (เปิดมอเตอร์)
@@ -137,89 +143,98 @@ async function transcribeAudio(filePath: string): Promise<string> {
  * index 7: HeadOffice (ไปชมตึก HeadOffice)
  * index 8: Multi-purpose (ไปชมตึก multi-purpose)
  */
-function detectCommands(transcript: string): string[] {
-  const params: string[] = [];
+function detectCommands(transcript: string): number[] {
+  // paramNoArray มี 9 ช่องเป็นตัวเลข เริ่มต้นเป็น 0
+  let paramNoArray = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   // 1. Motor run
   const motorRunKeywords = [
     "เปิดมอเตอร์",
-    "Motor run",
+    "motor run",
     "มอเตอร์รัน",
     "มอเตอร์ run",
-    "มอเตอร์ Open",
+    "มอเตอร์ open",
     "มอเตอร์โอเพ่น",
-    "Motor open",
+    "motor open",
   ];
-  const motorRunDetected = motorRunKeywords.some((keyword) =>
-    transcript.includes(keyword)
+  const motorRunDetected = motorRunKeywords.some((kw) =>
+    transcript.toLowerCase().includes(kw.toLowerCase())
   );
-  params[0] = motorRunDetected ? "run" : "";
+  if (motorRunDetected) {
+    paramNoArray[0] = 1;
+  }
 
   // 2. Motor stop
   const motorStopKeywords = [
     "ดับมอเตอร์",
-    "Motor stop",
+    "motor stop",
     "มอเตอร์สต๊อป",
-    "Motor close",
-    "มอเตอร์ Stop",
+    "motor close",
+    "มอเตอร์ stop",
   ];
-  const motorStopDetected = motorStopKeywords.some((keyword) =>
-    transcript.includes(keyword)
+  const motorStopDetected = motorStopKeywords.some((kw) =>
+    transcript.toLowerCase().includes(kw.toLowerCase())
   );
-  params[1] = motorStopDetected ? "stop" : "";
+  if (motorStopDetected) {
+    paramNoArray[1] = 1;
+  }
 
-  // 3. Motor percentage: ดึงตัวเลข 1-100 จากคำที่มี "%" หรือ "เปอร์เซ็น"
-  const motorPercentageRegex =
-    /(?:มอเตอร์|Motor)\s*(\d{1,3})\s*(?:เปอร์เซ็น|%)/i;
-  const percentageMatch = transcript.match(motorPercentageRegex);
-  params[2] = percentageMatch ? percentageMatch[1] : "";
+  // 3. Motor percentage (ดึงตัวเลข 1-100)
+  // ตัวอย่างคำ: "มอเตอร์ 50 %", "motor 80 เปอร์เซ็น"
+  const motorPercentRegex = /(?:มอเตอร์|motor)\s+(\d{1,3})\s*(?:เปอร์เซ็น|%)/i;
+  const percentMatch = transcript.match(motorPercentRegex);
+  if (percentMatch) {
+    // แปลงเป็นตัวเลข เช่น "50" → 50
+    const value = parseInt(percentMatch[1], 10);
+    // ถ้าเกิน 100 ก็อาจกำหนดเป็น 100 หรือไม่เก็บก็ได้
+    paramNoArray[2] = value > 100 ? 100 : value;
+  }
 
-  // 4. Building 1: "ไปชมตึก1" หรือ "พาไปดูตึก1"
+  // 4. ตึก1
   const building1Keywords = ["ไปชมตึก1", "พาไปดูตึก1"];
-  const building1Detected = building1Keywords.some((keyword) =>
-    transcript.includes(keyword)
-  );
-  params[3] = building1Detected ? "1" : "";
+  if (building1Keywords.some((kw) => transcript.includes(kw))) {
+    paramNoArray[3] = 1;
+  }
 
-  // 5. Building 2
+  // 5. ตึก2
   const building2Keywords = ["ไปชมตึก2", "พาไปดูตึก2"];
-  const building2Detected = building2Keywords.some((keyword) =>
-    transcript.includes(keyword)
-  );
-  params[4] = building2Detected ? "2" : "";
+  if (building2Keywords.some((kw) => transcript.includes(kw))) {
+    paramNoArray[4] = 1;
+  }
 
-  // 6. Building 3
+  // 6. ตึก3
   const building3Keywords = ["ไปชมตึก3", "พาไปดูตึก3"];
-  const building3Detected = building3Keywords.some((keyword) =>
-    transcript.includes(keyword)
-  );
-  params[5] = building3Detected ? "3" : "";
+  if (building3Keywords.some((kw) => transcript.includes(kw))) {
+    paramNoArray[5] = 1;
+  }
 
-  // 7. Building 4
+  // 7. ตึก4
   const building4Keywords = ["ไปชมตึก4", "พาไปดูตึก4"];
-  const building4Detected = building4Keywords.some((keyword) =>
-    transcript.includes(keyword)
-  );
-  params[6] = building4Detected ? "4" : "";
+  if (building4Keywords.some((kw) => transcript.includes(kw))) {
+    paramNoArray[6] = 1;
+  }
 
-  // 8. HeadOffice
-  const headOfficeKeywords = ["ไปชมตึกHeadOffice", "พาไปดูตึกHeadOffice"];
-  const headOfficeDetected = headOfficeKeywords.some((keyword) =>
-    transcript.includes(keyword)
-  );
-  params[7] = headOfficeDetected ? "HeadOffice" : "";
+  // 8. ตึก HeadOffice
+  const headOfficeKeywords = ["ไปชมตึกheadoffice", "พาไปดูตึกheadoffice"];
+  if (
+    headOfficeKeywords.some((kw) =>
+      transcript.toLowerCase().includes(kw.toLowerCase())
+    )
+  ) {
+    paramNoArray[7] = 1;
+  }
 
-  // 9. Multi-purpose
-  const multiPurposeKeywords = [
-    "ไปชมตึก multi-purpose",
-    "พาไปดูตึกmulti-purpose",
-  ];
-  const multiPurposeDetected = multiPurposeKeywords.some((keyword) =>
-    transcript.includes(keyword)
-  );
-  params[8] = multiPurposeDetected ? "multi-purpose" : "";
+  // 9. ตึก multi-purpose
+  const multiKeywords = ["ไปชมตึก multi-purpose", "พาไปดูตึกmulti-purpose"];
+  if (
+    multiKeywords.some((kw) =>
+      transcript.toLowerCase().includes(kw.toLowerCase())
+    )
+  ) {
+    paramNoArray[8] = 1;
+  }
 
-  return params;
+  return paramNoArray;
 }
 
 app.listen(PORT, () => {
