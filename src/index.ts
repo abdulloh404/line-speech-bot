@@ -142,15 +142,20 @@ async function transcribeAudio(filePath: string): Promise<string> {
   const request = {
     audio: audio,
     config: {
-      encoding: "LINEAR16" as any,
+      encoding: "LINEAR16" as "LINEAR16", // literal type
       sampleRateHertz: 16000,
       languageCode: "th-TH",
+      alternativeLanguageCodes: ["en-US"],
+      model: "default",
+      useEnhanced: true,
     },
   };
+
   const [response] = await speechClient.recognize(request);
+
   return (
     response.results
-      ?.map((result) => result.alternatives[0].transcript)
+      ?.map((result) => result.alternatives![0].transcript)
       .join("\n") || ""
   );
 }
