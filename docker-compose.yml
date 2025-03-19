@@ -12,7 +12,7 @@ services:
       LETSENCRYPT_EMAIL: support@cocoa-d.net
       GOOGLE_APPLICATION_CREDENTIALS: /app/config/service-account-speech-text-api.json
     ports:
-      - "8806:8807"
+      - "8807:8806"
     env_file:
       - .env
     volumes:
