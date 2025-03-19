@@ -44,6 +44,11 @@ let paramNoArray = [
   "1",
 ];
 
+app.get("/fetch", (req, res) => {
+  let returnValue = JSON.stringify(paramNoArray, null, 2);
+  res.status(200).send(returnValue);
+});
+
 // app.use(middleware(config));
 app.use(express.json());
 
