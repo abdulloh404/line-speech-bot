@@ -127,10 +127,6 @@ async function transcribeAudio(filePath: string): Promise<string> {
   );
 }
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
-
 /**
  * ตรวจจับคำสั่งจาก transcript และส่งกลับเป็น array
  * index 0: คำสั่ง Motor run (เปิดมอเตอร์)
@@ -237,11 +233,6 @@ function detectCommands(transcript: string): number[] {
   return paramNoArray;
 }
 
-if (require.main === module) {
-  const server = app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-  });
-  server.on("error", (err) => {
-    console.error("Server encountered an error:", err);
-  });
-}
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
