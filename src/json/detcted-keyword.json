@@ -22,5 +22,10 @@
   ["ไปชมตึก 3", "พาไปดูตึก 3"],
   ["ไปชมตึก 4", "พาไปดูตึก 4"],
   ["ไปชมตึก head office", "พาไปดูตึกhead office"],
-  ["ไปชมตึก multi purpose", "พาไปดูตึก multi purpose"]
+  [
+    "ไปชมตึก multi purpose",
+    "พาไปดูตึก multi purpose",
+    "ไปชมตึก multi-purpose",
+    "พาไปดูตึก multi-purpose"
+  ]
 ]
