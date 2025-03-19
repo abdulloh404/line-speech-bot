@@ -109,7 +109,7 @@ export function detectKeywords(transcript: string): number[] {
 
   // ตรวจจับ head office (index 7)
   if (
-    (lowerText.includes("head office") || lowerText.includes("เฮดออฟฟิศ")) &&
+    (lowerText.includes("office") || lowerText.includes("ออฟฟิศ")) && // เพิ่มการตรวจจับแค่คำว่า "office" หรือ "ออฟฟิศ"
     lowerText.includes("ตึก") &&
     (lowerText.includes("ชม") || lowerText.includes("ดู"))
   ) {
