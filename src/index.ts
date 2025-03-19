@@ -146,35 +146,49 @@ async function handleAudioMessage(event: any) {
   fs.writeFileSync(audioPath, audioBuffer);
 
   await convertOggToWav(audioPath, wavPath);
-
   const transcript = await transcribeAudio(wavPath);
   console.log("Transcription:", transcript);
 
-  // ตรวจจับคำสั่งที่มีอยู่ในข้อความ
+  // ตรวจจับคำสั่ง
   const detectedCommands = detectCommands(transcript);
   console.log("Detected Commands:", detectedCommands);
 
-  // ส่งข้อความตอบกลับ LINE (สามารถเพิ่มเติมการจัดการตาม detectedCommands ได้)
+  // ส่งข้อความตอบกลับ (หรือปรับตามที่ต้องการ)
   await client.replyMessage(event.replyToken, {
     type: "text",
     text: transcript || "ขออภัย ไม่สามารถแปลงข้อความได้",
   });
 
-  // ตัวอย่างการสลับค่าใน paramNoArray ตามคำสั่ง (ปรับตามความต้องการ)
+  // Toggle ค่าตามคำสั่งที่ตรวจจับได้
   detectedCommands.forEach((cmd) => {
     if (cmd.type === "motor") {
       if (cmd.action === "run") {
+        // สมมุติ toggle motor run ที่ paramNoArray[0]
         paramNoArray[0] = paramNoArray[0] === "1" ? "0" : "1";
       } else if (cmd.action === "stop") {
+        // สมมุติ toggle motor stop ที่ paramNoArray[1]
         paramNoArray[1] = paramNoArray[1] === "1" ? "0" : "1";
       } else if (cmd.action === "percent") {
-        // สามารถบันทึกค่าเปอร์เซ็นในตำแหน่งที่ต้องการได้ เช่น paramNoArray[2] = cmd.value;
+        // บันทึกค่าเปอร์เซ็นที่ paramNoArray[2]
         paramNoArray[2] = cmd.value.toString();
       }
     } else if (cmd.type === "navigate") {
-      // จัดการกับคำสั่งนำทาง เช่น:
-      console.log(`นำทางไปยัง ${cmd.destination}`);
-      // สามารถปรับเปลี่ยนการทำงานหรือส่งค่ากลับให้ระบบอื่นได้
+      // mapping สำหรับ toggle ค่าของ building commands
+      const buildingToggleMapping: { [key: string]: number } = {
+        building1: 6,
+        building2: 7,
+        building3: 8,
+        building4: 9,
+        headOffice: 10,
+        multiPurpose: 11,
+      };
+      const index = buildingToggleMapping[cmd.destination];
+      if (index !== undefined) {
+        paramNoArray[index] = paramNoArray[index] === "1" ? "0" : "1";
+        console.log(
+          `Toggle ${cmd.destination} at index ${index}: ${paramNoArray[index]}`
+        );
+      }
     }
   });
 
