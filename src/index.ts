@@ -11,6 +11,7 @@ import fs from "fs";
 import path from "path";
 import * as speech from "@google-cloud/speech";
 import ffmpeg from "fluent-ffmpeg";
+import stringSimilarity from "string-similarity";
 
 const port = process.env.PORT;
 const baseUrl = process.env.BASE_URL;
@@ -96,11 +97,41 @@ export function detectKeywords(transcript: string): number[] {
     }
   }
 
-  // ตรวจจับ building commands (index 3-8)
-  for (let i = 3; i < keywordData.length; i++) {
+  // สำหรับ building commands index 3-6
+  for (let i = 3; i <= 6; i++) {
     if (keywordData[i].some((kw) => text.includes(kw.toLowerCase()))) {
       detectedIndices.push(i);
     }
+  }
+
+  const lowerText = text.toLowerCase();
+
+  // ตรวจจับ head office (index 7)
+  // ตรวจสอบคำว่า "head office", "ตึก" และ ("ชม" หรือ "ดู")
+  const headOfficeScore = stringSimilarity.compareTwoStrings(
+    lowerText,
+    "head office"
+  );
+  if (
+    headOfficeScore >= 0.8 &&
+    lowerText.includes("ตึก") &&
+    (lowerText.includes("ชม") || lowerText.includes("ดู"))
+  ) {
+    detectedIndices.push(7);
+  }
+
+  // ตรวจจับ multi purpose (index 8)
+  // ตรวจสอบคำว่า "multi purpose" หรือ "multi-purpose", "ตึก" และ ("ชม" หรือ "ดู")
+  const multiPurposeScore = Math.max(
+    stringSimilarity.compareTwoStrings(lowerText, "multi purpose"),
+    stringSimilarity.compareTwoStrings(lowerText, "multi-purpose")
+  );
+  if (
+    multiPurposeScore >= 0.8 &&
+    lowerText.includes("ตึก") &&
+    (lowerText.includes("ชม") || lowerText.includes("ดู"))
+  ) {
+    detectedIndices.push(8);
   }
 
   return detectedIndices;
