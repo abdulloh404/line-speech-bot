@@ -1,17 +1,17 @@
-import "dotenv/config";
+import * as speech from "@google-cloud/speech";
+import axios from "axios";
 import express from "express";
+import ffmpeg from "fluent-ffmpeg";
+import fs from "fs";
+import path from "path";
+import stringSimilarity from "string-similarity";
+import "dotenv/config";
 import {
   Client,
   middleware,
   MiddlewareConfig,
   ClientConfig,
 } from "@line/bot-sdk";
-import axios from "axios";
-import fs from "fs";
-import path from "path";
-import * as speech from "@google-cloud/speech";
-import ffmpeg from "fluent-ffmpeg";
-import stringSimilarity from "string-similarity";
 
 const port = process.env.PORT;
 const baseUrl = process.env.BASE_URL;
@@ -74,30 +74,38 @@ const keywordData: string[][] = JSON.parse(
  * index 6: building4, index 7: headOffice, index 8: multi-purpose
  */
 export function detectKeywords(transcript: string): number[] {
-  const text = transcript.toLowerCase();
   const detectedIndices: number[] = [];
+  const lowerText = transcript.toLowerCase();
 
   // ตรวจจับ motor run (index 0)
-  if (keywordData[0].some((kw) => text.includes(kw.toLowerCase()))) {
-    detectedIndices.push(0);
+  if (!detectedIndices.includes(0)) {
+    for (const kw of keywordData[0]) {
+      if (lowerText.includes(kw.toLowerCase())) {
+        detectedIndices.push(0);
+        break;
+      }
+    }
   }
 
   // ตรวจจับ motor stop (index 1)
-  if (keywordData[1].some((kw) => text.includes(kw.toLowerCase()))) {
-    detectedIndices.push(1);
+  if (!detectedIndices.includes(1)) {
+    for (const kw of keywordData[1]) {
+      if (lowerText.includes(kw.toLowerCase())) {
+        detectedIndices.push(1);
+        break;
+      }
+    }
   }
 
   // ตรวจจับ motor percent (index 2)
   // ตรวจสอบว่ามีคำว่า "มอเตอร์" หรือ "motor" และตัวเลขที่ตามด้วย "%" หรือ "เปอร์เซ็น"
-  if (keywordData[2].some((kw) => text.includes(kw.toLowerCase()))) {
+  if (keywordData[2].some((kw) => lowerText.includes(kw.toLowerCase()))) {
     const percentRegex = /(\d{1,3})\s*(?:%|เปอร์เซ็น)/i;
     const match = transcript.match(percentRegex);
     if (match && match[1]) {
       detectedIndices.push(2);
     }
   }
-
-  const lowerText = text.toLowerCase();
 
   // ตรวจจับคำสั่งที่เกี่ยวกับตึก 1-4 (index 3-6)
   const buildingIndices = [3, 4, 5, 6];
