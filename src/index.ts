@@ -77,64 +77,49 @@ export function detectKeywords(transcript: string): number[] {
   const detectedIndices: number[] = [];
   const lowerText = transcript.toLowerCase();
 
-  console.log("ตรวจสอบข้อความ:", lowerText);
-
-  // ตรวจจับ motor run (index 0)
-  if (
-    !detectedIndices.includes(0) &&
-    keywordData[0].some((kw) => lowerText.includes(kw.toLowerCase()))
-  ) {
-    console.log("พบคำสั่ง: เปิดมอเตอร์");
+  // ตรวจจับ motor run (index 0) ก่อน motor stop (index 1)
+  if (keywordData[0].some((kw) => lowerText.includes(kw.toLowerCase()))) {
     detectedIndices.push(0);
-  }
-
-  // ตรวจจับ motor stop (index 1)
-  if (
-    !detectedIndices.includes(1) &&
+  } else if (
     keywordData[1].some((kw) => lowerText.includes(kw.toLowerCase()))
   ) {
-    console.log("พบคำสั่ง: ปิดมอเตอร์");
     detectedIndices.push(1);
   }
 
   // ตรวจจับ motor percent (index 2)
   const percentRegex = /(\d{1,3})\s*(?:%|เปอร์เซ็น)/i;
-  const match = transcript.match(percentRegex);
-  if (match && match[1]) {
-    console.log(`พบคำสั่ง: ปรับความเร็วมอเตอร์เป็น ${match[1]}%`);
+  if (percentRegex.test(transcript)) {
     detectedIndices.push(2);
   }
 
   // ตรวจจับตึก 1-4 (index 3-6)
   for (let i = 3; i <= 6; i++) {
-    const buildingNumber = i - 2; // ตึก 1-4
+    const buildingNumber = i - 2;
     if (
       (lowerText.includes(`ตึก ${buildingNumber}`) ||
         keywordData[i].some((kw) => lowerText.includes(kw.toLowerCase()))) &&
       (lowerText.includes("ชม") || lowerText.includes("ดู"))
     ) {
-      console.log(`พบคำสั่ง: พาไปดูตึก ${buildingNumber}`);
       detectedIndices.push(i);
-      break; // ป้องกันการตรวจจับซ้ำซ้อน
+      break;
     }
   }
 
   // ตรวจจับ head office (index 7)
   if (
-    !detectedIndices.includes(7) &&
-    (lowerText.includes("head office") || lowerText.includes("เฮดออฟฟิศ"))
+    (lowerText.includes("head office") || lowerText.includes("เฮดออฟฟิศ")) &&
+    lowerText.includes("ตึก") &&
+    (lowerText.includes("ชม") || lowerText.includes("ดู"))
   ) {
-    console.log("พบคำสั่ง: พาไปดูตึก Head office");
     detectedIndices.push(7);
   }
 
-  // ตรวจจับ multi-purpose (index 8)
+  // ตรวจจับ multi purpose (index 8)
   if (
-    !detectedIndices.includes(8) &&
     (lowerText.includes("อาคารอเนกประสงค์") ||
-      lowerText.includes("ตึกอเนกประสงค์"))
+      lowerText.includes("ตึกอเนกประสงค์")) &&
+    (lowerText.includes("ชม") || lowerText.includes("ดู"))
   ) {
-    console.log("พบคำสั่ง: พาไปดูตึกเอนกประสงค์");
     detectedIndices.push(8);
   }
 
