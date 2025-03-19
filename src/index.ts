@@ -74,12 +74,12 @@ export function detectKeywords(transcript: string): number[] {
   // ตรวจจับ motor run (index 0) ก่อน motor stop (index 1)
   if (keywordData[0].some((kw) => lowerText.includes(kw.toLowerCase()))) {
     detectedIndices.push(0);
-    paramNoArray[0] = "1"; // เก็บค่าไว้ใน paramNoArray
+    paramNoArray[0] = paramNoArray[0] === "1" ? "0" : "1"; // Toggle ค่า
   } else if (
     keywordData[1].some((kw) => lowerText.includes(kw.toLowerCase()))
   ) {
     detectedIndices.push(1);
-    paramNoArray[1] = "1"; // เก็บค่าไว้ใน paramNoArray
+    paramNoArray[1] = paramNoArray[1] === "1" ? "0" : "1"; // Toggle ค่า
   }
 
   // ตรวจจับ motor percent (index 2) และเก็บเปอร์เซ็นต์
@@ -87,7 +87,7 @@ export function detectKeywords(transcript: string): number[] {
   const percentMatch = transcript.match(percentRegex);
   if (percentMatch && percentMatch[1]) {
     detectedIndices.push(2);
-    paramNoArray[2] = percentMatch[1]; // เก็บเปอร์เซ็นต์ใน paramNoArray
+    paramNoArray[2] = paramNoArray[2] === "1" ? "0" : "1"; // Toggle ค่า
   }
 
   // ตรวจจับตึก 1-4 (index 3-6)
@@ -99,7 +99,7 @@ export function detectKeywords(transcript: string): number[] {
       (lowerText.includes("ชม") || lowerText.includes("ดู"))
     ) {
       detectedIndices.push(i);
-      paramNoArray[i] = "1"; // เก็บค่าใน paramNoArray
+      paramNoArray[i] = paramNoArray[i] === "1" ? "0" : "1"; // Toggle ค่า
       break;
     }
   }
@@ -111,7 +111,7 @@ export function detectKeywords(transcript: string): number[] {
     (lowerText.includes("ชม") || lowerText.includes("ดู"))
   ) {
     detectedIndices.push(7);
-    paramNoArray[7] = "1"; // เก็บค่าใน paramNoArray
+    paramNoArray[7] = paramNoArray[7] === "1" ? "0" : "1"; // Toggle ค่า
   }
 
   // ตรวจจับ multi purpose (index 8)
@@ -121,7 +121,7 @@ export function detectKeywords(transcript: string): number[] {
     (lowerText.includes("ชม") || lowerText.includes("ดู"))
   ) {
     detectedIndices.push(8);
-    paramNoArray[8] = "1"; // เก็บค่าใน paramNoArray
+    paramNoArray[8] = paramNoArray[8] === "1" ? "0" : "1"; // Toggle ค่า
   }
 
   return detectedIndices;
