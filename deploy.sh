@@ -5,6 +5,9 @@ set -e
 GREEN='\033[0;32m'
 NC='\033[0m'
 
+echo -e "${GREEN}🚀 Stopping and removing old containers...${NC}"
+docker compose down
+
 echo -e "${GREEN}🚀 Pulling latest code from Git...${NC}"
 git pull origin main --no-rebase
 
