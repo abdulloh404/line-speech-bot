@@ -80,15 +80,16 @@ app.get("/command", (req, res) => {
   res.status(200).send(returnValue);
 });
 
-// โหลดไฟล์ JSON ที่เก็บ keyword (motorKeywords.json)
-const keywordFilePath = path.join(__dirname, "motorKeywords.json");
+const keywordFilePath = path.join(__dirname, "json/detcted-keyword.json");
 const keywordData: string[][] = JSON.parse(
   fs.readFileSync(keywordFilePath, "utf-8")
 );
 
 /**
  * ตรวจจับ keyword จาก transcript โดยจะ return index ของ keyword ที่ตรวจพบ
- * index 0: motor run, index 1: motor stop, index 2: motor percent
+ * index 0: motor run, index 1: motor stop, index 2: motor percent,
+ * index 3: building1, index 4: building2, index 5: building3,
+ * index 6: building4, index 7: headOffice, index 8: multi-purpose
  */
 export function detectKeywords(transcript: string): number[] {
   const text = transcript.toLowerCase();
@@ -105,7 +106,7 @@ export function detectKeywords(transcript: string): number[] {
   }
 
   // ตรวจจับ motor percent (index 2)
-  // โดยตรวจจับว่ามีคำว่า "มอเตอร์" หรือ "motor" พร้อมกับตัวเลขและ "%" หรือ "เปอร์เซ็น"
+  // ตรวจสอบว่ามีคำว่า "มอเตอร์" หรือ "motor" และตัวเลขที่ตามด้วย "%" หรือ "เปอร์เซ็น"
   if (keywordData[2].some((kw) => text.includes(kw.toLowerCase()))) {
     const percentRegex = /(\d{1,3})\s*(?:%|เปอร์เซ็น)/i;
     const match = transcript.match(percentRegex);
@@ -113,6 +114,14 @@ export function detectKeywords(transcript: string): number[] {
       detectedIndices.push(2);
     }
   }
+
+  // ตรวจจับ building commands (index 3-8)
+  for (let i = 3; i < keywordData.length; i++) {
+    if (keywordData[i].some((kw) => text.includes(kw.toLowerCase()))) {
+      detectedIndices.push(i);
+    }
+  }
+
   return detectedIndices;
 }
 
@@ -131,34 +140,32 @@ export async function handleAudioMessage(event: any) {
   const detectedIndices = detectKeywords(transcript);
   console.log("Detected Indices:", detectedIndices);
 
-  // ส่งข้อความตอบกลับไปยัง LINE
-  await client.replyMessage(event.replyToken, {
-    type: "text",
-    text: transcript || "ขออภัย ไม่สามารถแปลงข้อความได้",
-  });
+  await client
+    .replyMessage(event.replyToken, {
+      type: "text",
+      text: transcript || "ขออภัย ไม่สามารถแปลงข้อความได้",
+    })
+    .then(() => {
+      // Toggle ค่าใน paramNoArray ตาม index ที่ตรวจจับได้
+      detectedIndices.forEach((idx) => {
+        if (idx === 2) {
+          // สำหรับ motor percent, จับตัวเลขแล้วเก็บที่ paramNoArray[2]
+          const percentRegex = /(\d{1,3})\s*(?:%|เปอร์เซ็น)/i;
+          const match = transcript.match(percentRegex);
+          if (match && match[1]) {
+            paramNoArray[2] = Number(match[1]).toString();
+          }
+        } else {
+          // สำหรับคำสั่งอื่นๆ, toggle ค่า "1" เป็น "0" หรือ "0" เป็น "1"
+          paramNoArray[idx] = paramNoArray[idx] === "1" ? "0" : "1";
+        }
+      });
+    });
 
-  // ตัวอย่างการใช้ detectedIndices สำหรับ toggle ค่าลงใน paramNoArray
-  // หากพบ index 0 (motor run) toggle ที่ paramNoArray[0]
-  if (detectedIndices.includes(0)) {
-    paramNoArray[0] = paramNoArray[0] === "1" ? "0" : "1";
-  }
-  // หากพบ index 1 (motor stop) toggle ที่ paramNoArray[1]
-  if (detectedIndices.includes(1)) {
-    paramNoArray[1] = paramNoArray[1] === "1" ? "0" : "1";
-  }
-  // หากพบ index 2 (motor percent) ให้จับตัวเลขแล้วบันทึกที่ paramNoArray[2]
-  if (detectedIndices.includes(2)) {
-    const percentRegex = /(\d{1,3})\s*(?:%|เปอร์เซ็น)/i;
-    const match = transcript.match(percentRegex);
-    if (match && match[1]) {
-      paramNoArray[2] = Number(match[1]).toString();
-    }
-  }
-
-  // ลบไฟล์ชั่วคราว
   fs.unlinkSync(audioPath);
   fs.unlinkSync(wavPath);
 }
+
 async function getAudioFromLINE(messageId: string): Promise<Buffer> {
   const url = `https://api-data.line.me/v2/bot/message/${messageId}/content`;
   const response = await axios.get(url, {
