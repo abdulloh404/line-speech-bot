@@ -237,6 +237,11 @@ function detectCommands(transcript: string): number[] {
   return paramNoArray;
 }
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  const server = app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+  });
+  server.on("error", (err) => {
+    console.error("Server encountered an error:", err);
+  });
+}
