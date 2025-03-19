@@ -27,26 +27,7 @@ const config: ClientConfig & MiddlewareConfig = {
 const client = new Client(config);
 const speechClient = new speech.SpeechClient();
 
-let paramNoArray = [
-  "1",
-  "1",
-  "1",
-  "1",
-  "1",
-  "1",
-  "1",
-  "1",
-  "1",
-  "1",
-  "1",
-  "1",
-  "1",
-  "1",
-  "1",
-  "1",
-  "1",
-  "1",
-];
+let paramNoArray = ["1", "1", "1", "1", "1", "1", "1", "1"];
 
 app.get("/fetch", (req, res) => {
   let returnValue = JSON.stringify(paramNoArray, null, 2);
