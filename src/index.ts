@@ -165,33 +165,33 @@ export async function handleAudioMessage(event: any) {
     detectedIndices.forEach((idx) => {
       switch (idx) {
         case 0:
-          responseText += "1 -> ระบบกำลังเปิด มอเตอร์ให้ครับ\n";
+          responseText += "ระบบกำลังเปิด มอเตอร์ให้ครับ\n";
           break;
         case 1:
-          responseText += "2 -> ระบบกำลังปิด มอเตอร์ให้ครับ\n";
+          responseText += "ระบบกำลังปิด มอเตอร์ให้ครับ\n";
           break;
         case 2:
           const percentMatch = transcript.match(/\d{1,3}/);
           const percent = percentMatch ? percentMatch[0] : "xx";
-          responseText += `3 -> ระบบกำลังปรับความเร็ว มอเตอร์ เป็น ${percent}%\n`;
+          responseText += `ระบบกำลังปรับความเร็ว มอเตอร์ เป็น ${percent}%\n`;
           break;
         case 3:
-          responseText += "4 -> ระบบ กำลังพาไปดูตึก1\n";
+          responseText += "ระบบ กำลังพาไปดูตึก1\n";
           break;
         case 4:
-          responseText += "5 -> ระบบ กำลังพาไปดูตึก2\n";
+          responseText += "ระบบ กำลังพาไปดูตึก2\n";
           break;
         case 5:
-          responseText += "6 -> ระบบ กำลังพาไปดูตึก3\n";
+          responseText += "ระบบ กำลังพาไปดูตึก3\n";
           break;
         case 6:
-          responseText += "7 -> ระบบ กำลังพาไปดูตึก4\n";
+          responseText += "ระบบ กำลังพาไปดูตึก4\n";
           break;
         case 7:
-          responseText += "8 -> ระบบ กำลังพาไปดูตึก Head office\n";
+          responseText += "ระบบ กำลังพาไปดูตึก Head office\n";
           break;
         case 8:
-          responseText += "9 -> ระบบ กำลังพาไปดูตึกเอนกประสงค์\n";
+          responseText += "ระบบ กำลังพาไปดูตึกเอนกประสงค์\n";
           break;
       }
     });
