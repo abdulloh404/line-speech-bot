@@ -82,12 +82,15 @@ export function detectKeywords(transcript: string): number[] {
     paramNoArray[1] = paramNoArray[1] === "1" ? "0" : "1"; // Toggle ค่า
   }
 
-  // ตรวจจับ motor percent (index 2) และเก็บเปอร์เซ็นต์
+  // ตรวจจับ motor percent (index 2) และเก็บเปอร์เซ็นต์เป็นค่า 1-100
   const percentRegex = /(\d{1,3})\s*(?:%|เปอร์เซ็น)/i;
   const percentMatch = transcript.match(percentRegex);
   if (percentMatch && percentMatch[1]) {
-    detectedIndices.push(2);
-    paramNoArray[2] = paramNoArray[2] === "1" ? "0" : "1"; // Toggle ค่า
+    const percent = parseInt(percentMatch[1], 10); // แปลงเปอร์เซ็นต์เป็นตัวเลข
+    if (percent >= 1 && percent <= 100) {
+      detectedIndices.push(2);
+      paramNoArray[2] = percent.toString(); // เก็บค่าเปอร์เซ็นต์ระหว่าง 1-100
+    }
   }
 
   // ตรวจจับตึก 1-4 (index 3-6)
