@@ -150,39 +150,39 @@ export async function handleAudioMessage(event: any) {
     detectedIndices.forEach((idx) => {
       switch (idx) {
         case 0:
-          responseText += "- ระบบกำลังเปิดมอเตอร์ให้ครับ\n";
+          responseText += "- ระบบกำลังเปิดมอเตอร์ให้ครับ";
           break;
         case 1:
-          responseText += "- ระบบกำลังปิดมอเตอร์ให้ครับ\n";
+          responseText += "- ระบบกำลังปิดมอเตอร์ให้ครับ";
           break;
         case 2:
           // เก็บเปอร์เซ็นต์จากข้อความ
           const percentMatch = transcript.match(/\d{1,3}/);
           const percent = percentMatch ? percentMatch[0] : "xx";
-          responseText += `- ระบบกำลังปรับความเร็ว มอเตอร์ เป็น ${percent}%\n`;
+          responseText += `- ระบบกำลังปรับความเร็ว มอเตอร์ เป็น ${percent}%`;
           break;
         case 3:
-          responseText += "- ระบบกำลังพาไปดูตึก 1\n";
+          responseText += "- ระบบกำลังพาไปดูตึก 1";
           break;
         case 4:
-          responseText += "- ระบบกำลังพาไปดูตึก 2\n";
+          responseText += "- ระบบกำลังพาไปดูตึก 2";
           break;
         case 5:
-          responseText += "- ระบบกำลังพาไปดูตึก 3\n";
+          responseText += "- ระบบกำลังพาไปดูตึก 3";
           break;
         case 6:
-          responseText += "- ระบบกำลังพาไปดูตึก 4\n";
+          responseText += "- ระบบกำลังพาไปดูตึก 4";
           break;
         case 7:
-          responseText += "- ระบบกำลังพาไปดูตึก Head office\n";
+          responseText += "- ระบบกำลังพาไปดูตึก Head office";
           break;
         case 8:
-          responseText += "- ระบบกำลังพาไปดูตึกเอนกประสงค์\n";
+          responseText += "- ระบบกำลังพาไปดูตึกเอนกประสงค์";
           break;
       }
     });
   } else {
-    responseText += "ขออภัย ไม่พบคำสั่งที่รองรับ\n";
+    responseText += "ขออภัย ไม่พบคำสั่งที่รองรับ";
   }
 
   // ส่งข้อความตอบกลับไปที่ LINE
