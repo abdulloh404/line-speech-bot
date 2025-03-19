@@ -23,6 +23,27 @@ const config: ClientConfig & MiddlewareConfig = {
 const client = new Client(config);
 const speechClient = new speech.SpeechClient();
 
+let paramNoArray = [
+  "1",
+  "1",
+  "1",
+  "1",
+  "1",
+  "1",
+  "1",
+  "1",
+  "1",
+  "1",
+  "1",
+  "1",
+  "1",
+  "1",
+  "1",
+  "1",
+  "1",
+  "1",
+];
+
 // app.use(middleware(config));
 app.use(express.json());
 
@@ -34,7 +55,7 @@ app.post("/webhook", async (req, res) => {
 
   const events = req.body.events;
   for (const event of events) {
-    if (event.type === "message" && event.message.type === "audio") {
+    if (event.message.type === "audio") {
       try {
         console.log(`🎤 Received Audio Message: ${event.message.id}`);
         await handleAudioMessage(event);
@@ -44,6 +65,13 @@ app.post("/webhook", async (req, res) => {
     }
   }
   res.sendStatus(200);
+});
+
+app.get("/command", (req, res) => {
+  // get parameter from url
+  let param = req.query.no;
+  let returnValue = paramNoArray[Number(param) - 1];
+  res.status(200).send(returnValue);
 });
 
 async function handleAudioMessage(event: any) {
@@ -56,11 +84,29 @@ async function handleAudioMessage(event: any) {
   await convertOggToWav(audioPath, wavPath);
 
   const transcript = await transcribeAudio(wavPath);
+  console.log(transcript);
 
-  await client.replyMessage(event.replyToken, {
-    type: "text",
-    text: transcript || "ขออภัย ไม่สามารถแปลงข้อความได้",
-  });
+  await client
+    .replyMessage(event.replyToken, {
+      type: "text",
+      text: transcript || "ขออภัย ไม่สามารถแปลงข้อความได้",
+    })
+    .then(() => {
+      console.log("📤 Sent Text Response:", transcript);
+      if (transcript.indexOf("เปิดไฟเมน 1") > -1) {
+        paramNoArray[0] = paramNoArray[0] == "1" ? "0" : "1";
+      } else if (transcript.indexOf("ดับไฟเมน 1") > -1) {
+        paramNoArray[1] = paramNoArray[1] == "1" ? "0" : "1";
+      } else if (transcript.indexOf("เปิดไฟเมน 2") > -1) {
+        paramNoArray[2] = paramNoArray[2] == "1" ? "0" : "1";
+      } else if (transcript.indexOf("ดับไฟเมน 2") > -1) {
+        paramNoArray[3] = paramNoArray[3] == "1" ? "0" : "1";
+      } else if (transcript.indexOf("เปิดไฟห้องคอนโทรล") > -1) {
+        paramNoArray[4] = paramNoArray[4] == "1" ? "0" : "1";
+      } else if (transcript.indexOf("ดับไฟห้องคอนโทรล") > -1) {
+        paramNoArray[5] = paramNoArray[5] == "1" ? "0" : "1";
+      }
+    });
 
   // ลบไฟล์ชั่วคราว
   fs.unlinkSync(audioPath);
