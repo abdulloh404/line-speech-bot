@@ -121,10 +121,10 @@ function detectCommands(transcript: string) {
 
   // 4-9. ตรวจจับคำสั่งนำทางไปยังอาคารต่าง ๆ
   const buildingCommands: { [key: string]: string[] } = {
-    building1: ["ไปชมตึก1", "พาไปดูตึก1"],
-    building2: ["ไปชมตึก2", "พาไปดูตึก2"],
-    building3: ["ไปชมตึก3", "พาไปดูตึก3"],
-    building4: ["ไปชมตึก4", "พาไปดูตึก4"],
+    building1: ["ไปชมตึก 1", "พาไปดูตึก 1"],
+    building2: ["ไปชมตึก 2", "พาไปดูตึก 2"],
+    building3: ["ไปชมตึก 3", "พาไปดูตึก 3"],
+    building4: ["ไปชมตึก 4", "พาไปดูตึก 4"],
     headOffice: ["ไปชมตึก HeadOffice", "พาไปดูตึก HeadOffice"],
     multiPurpose: ["ไปชมตึก multi-purpose", "พาไปดูตึก multi-purpose"],
   };
