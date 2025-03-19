@@ -123,8 +123,8 @@ export function detectKeywords(transcript: string): number[] {
   }
 
   // ตรวจจับ multi purpose (index 8)
-  // target สำหรับ multi purpose (ภาษาอังกฤษ) สามารถเพิ่มคำไทยได้ถ้ามี
-  const multiPurposeTargets = ["multi purpose", "multi-purpose"];
+  // target สำหรับ "อาคารอเนกประสงค์"
+  const multiPurposeTargets = ["อาคารอเนกประสงค์"];
   const multiPurposeScore = Math.max(
     ...multiPurposeTargets.map((t) =>
       stringSimilarity.compareTwoStrings(lowerText, t.toLowerCase())
@@ -132,7 +132,7 @@ export function detectKeywords(transcript: string): number[] {
   );
   if (
     multiPurposeScore >= 0.8 &&
-    lowerText.includes("ตึก") &&
+    lowerText.includes("อาคาร") &&
     (lowerText.includes("ชม") || lowerText.includes("ดู"))
   ) {
     detectedIndices.push(8);
