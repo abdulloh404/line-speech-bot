@@ -107,15 +107,8 @@ export function detectKeywords(transcript: string): number[] {
   const lowerText = text.toLowerCase();
 
   // ตรวจจับ head office (index 7)
-  // target คำสำคัญสำหรับ head office: ภาษาอังกฤษและภาษาไทย
-  const headOfficeTargets = ["head office", "เฮดออฟฟิศ"];
-  const headOfficeScore = Math.max(
-    ...headOfficeTargets.map((t) =>
-      stringSimilarity.compareTwoStrings(lowerText, t.toLowerCase())
-    )
-  );
   if (
-    headOfficeScore >= 0.8 &&
+    (lowerText.includes("head office") || lowerText.includes("เฮดออฟฟิศ")) &&
     lowerText.includes("ตึก") &&
     (lowerText.includes("ชม") || lowerText.includes("ดู"))
   ) {
@@ -123,16 +116,9 @@ export function detectKeywords(transcript: string): number[] {
   }
 
   // ตรวจจับ multi purpose (index 8)
-  // target สำหรับ "อาคารอเนกประสงค์"
-  const multiPurposeTargets = ["อาคารอเนกประสงค์"];
-  const multiPurposeScore = Math.max(
-    ...multiPurposeTargets.map((t) =>
-      stringSimilarity.compareTwoStrings(lowerText, t.toLowerCase())
-    )
-  );
   if (
-    multiPurposeScore >= 0.8 &&
-    lowerText.includes("อาคาร") &&
+    (lowerText.includes("อาคารอเนกประสงค์") ||
+      lowerText.includes("ตึกอเนกประสงค์")) &&
     (lowerText.includes("ชม") || lowerText.includes("ดู"))
   ) {
     detectedIndices.push(8);
