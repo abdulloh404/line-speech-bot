@@ -35,16 +35,13 @@ app.get("/fetch", (req: express.Request, res: express.Response): void => {
 });
 
 app.post("/webhook", async (req: express.Request, res: express.Response) => {
-  console.log(
-    "📥 Received Webhook Request:",
-    JSON.stringify(req.body, null, 2)
-  );
+  console.log("Received Webhook Request:", JSON.stringify(req.body, null, 2));
 
   const events = req.body.events;
   for (const event of events) {
     if (event.message.type === "audio") {
       try {
-        console.log(`🎤 Received Audio Message: ${event.message.id}`);
+        console.log(`Received Audio Message: ${event.message.id}`);
         await handleAudioMessage(event);
       } catch (error) {
         console.error("Error handling audio message:", error);
