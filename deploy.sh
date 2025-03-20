@@ -12,6 +12,7 @@ echo -e "${GREEN}🚀 Pulling latest code from Git...${NC}"
 git pull origin main --no-rebase
 
 echo -e "${GREEN}🐳 Building and restarting Docker containers...${NC}"
-docker compose up -d --build
+docker compose build --no-cache
+docker compose up --detach
 
 echo -e "${GREEN}✅ Deployment completed successfully!${NC}"
