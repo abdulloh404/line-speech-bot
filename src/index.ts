@@ -4,7 +4,6 @@ import express from "express";
 import ffmpeg from "fluent-ffmpeg";
 import fs from "fs";
 import path from "path";
-import stringSimilarity from "string-similarity";
 import "dotenv/config";
 import {
   Client,
@@ -30,12 +29,12 @@ const speechClient = new speech.SpeechClient();
 
 let paramNoArray = ["1", "1", "0", "1", "1", "1", "1", "1", "1"];
 
-app.get("/fetch", (req, res) => {
-  let returnValue = JSON.stringify(paramNoArray, null, 2);
+app.get("/fetch", (req: express.Request, res: express.Response): void => {
+  let returnValue: string = JSON.stringify(paramNoArray, null, 2);
   res.status(200).send(returnValue);
 });
 
-app.post("/webhook", async (req, res) => {
+app.post("/webhook", async (req: express.Request, res: express.Response) => {
   console.log(
     "📥 Received Webhook Request:",
     JSON.stringify(req.body, null, 2)
@@ -55,7 +54,7 @@ app.post("/webhook", async (req, res) => {
   res.sendStatus(200);
 });
 
-app.get("/command", (req, res) => {
+app.get("/command", (req: express.Request, res: express.Response) => {
   // get parameter from url
   let param = req.query.no;
   let returnValue = paramNoArray[Number(param) - 1];
