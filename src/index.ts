@@ -73,12 +73,12 @@ export function detectKeywords(transcript: string): number[] {
   // ตรวจจับ motor run (index 0) ก่อน motor stop (index 1)
   if (keywordData[0].some((kw) => lowerText.includes(kw.toLowerCase()))) {
     detectedIndices.push(0);
-    paramNoArray[0] = paramNoArray[0] === "1" ? "0" : "1"; // Toggle ค่า
+    paramNoArray[0] = paramNoArray[0] === "1" ? "0" : "1";
   } else if (
     keywordData[1].some((kw) => lowerText.includes(kw.toLowerCase()))
   ) {
     detectedIndices.push(1);
-    paramNoArray[1] = paramNoArray[1] === "1" ? "0" : "1"; // Toggle ค่า
+    paramNoArray[1] = paramNoArray[1] === "1" ? "0" : "1";
   }
 
   // ตรวจจับ motor percent (index 2) และเก็บเปอร์เซ็นต์เป็นค่า 1-100
@@ -101,19 +101,19 @@ export function detectKeywords(transcript: string): number[] {
       (lowerText.includes("ชม") || lowerText.includes("ดู"))
     ) {
       detectedIndices.push(i);
-      paramNoArray[i] = paramNoArray[i] === "1" ? "0" : "1"; // Toggle ค่า
+      paramNoArray[i] = paramNoArray[i] === "1" ? "0" : "1";
       break;
     }
   }
 
   // ตรวจจับ head office (index 7)
   if (
-    (lowerText.includes("office") || lowerText.includes("ออฟฟิศ")) && // เพิ่มการตรวจจับแค่คำว่า "office" หรือ "ออฟฟิศ"
+    (lowerText.includes("office") || lowerText.includes("ออฟฟิศ")) &&
     lowerText.includes("ตึก") &&
     (lowerText.includes("ชม") || lowerText.includes("ดู"))
   ) {
     detectedIndices.push(7);
-    paramNoArray[7] = paramNoArray[7] === "1" ? "0" : "1"; // Toggle ค่า
+    paramNoArray[7] = paramNoArray[7] === "1" ? "0" : "1";
   }
 
   // ตรวจจับ multi purpose (index 8)
@@ -123,7 +123,7 @@ export function detectKeywords(transcript: string): number[] {
     (lowerText.includes("ชม") || lowerText.includes("ดู"))
   ) {
     detectedIndices.push(8);
-    paramNoArray[8] = paramNoArray[8] === "1" ? "0" : "1"; // Toggle ค่า
+    paramNoArray[8] = paramNoArray[8] === "1" ? "0" : "1";
   }
 
   return detectedIndices;
